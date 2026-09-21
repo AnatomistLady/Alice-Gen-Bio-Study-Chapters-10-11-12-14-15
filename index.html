@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>General Biology Mastery Arcade | Chapters 10, 11, 12, 14 &amp; 15</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #131b2e;
+      --card-inner: #0b1120;
+      --border: #24324d;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 1rem; display: flex; justify-content: center; min-height: 100vh; position: relative; }
+    .app-shell { width: 100%; max-width: 780px; margin: auto; z-index: 10; }
+
+    header { text-align: center; margin-bottom: 1.25rem; }
+    header h1 { font-size: 1.55rem; color: var(--accent); margin-bottom: 0.25rem; }
+    header p { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Top Navigation Tabs */
+    .arcade-tabs { display: flex; gap: 0.5rem; justify-content: center; margin: 1rem 0 1.25rem; flex-wrap: wrap; }
+    .tab-btn {
+      background: var(--card-bg); color: var(--text); border: 2px solid var(--border);
+      padding: 0.6rem 1rem; font-size: 0.88rem; font-weight: 700; border-radius: 8px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .tab-btn:hover { background-color: #1e293b; }
+    .tab-btn[aria-selected="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Cards & Layout */
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); margin-bottom: 1rem; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .round-tag { background: #0b1120; color: var(--accent); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--border); }
+    .mastery-badge { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+
+    /* Dashboard & Mastery Trackers */
+    .dashboard { background: #131b2e; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 1rem; }
+    .stat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 10px; text-align: center; }
+    .stat-card { background: #0b1120; border: 1px solid var(--border); border-radius: 6px; padding: 6px 2px; }
+    .stat-label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; display: block; }
+    .stat-val { font-size: 0.85rem; color: var(--accent); font-weight: 800; margin-top: 2px; }
+    
+    .mastery-bar-wrap { background: #050811; border-radius: 20px; height: 12px; overflow: hidden; margin: 0.5rem 0; border: 1px solid var(--border); }
+    .mastery-bar-fill { background: linear-gradient(90deg, var(--accent), var(--success)); height: 100%; width: 0%; transition: width 0.4s ease; }
+    .mastery-stats { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem; }
+
+    /* MCQ Option Buttons */
+    .question-prompt { font-size: 1.05rem; font-weight: 600; line-height: 1.45; margin-bottom: 1rem; }
+    .options-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+    .opt-btn {
+      background: var(--card-inner); border: 2px solid var(--border); color: var(--text); padding: 0.85rem 1rem;
+      border-radius: 8px; font-size: 0.93rem; text-align: left; cursor: pointer; transition: all 0.2s;
+    }
+    .opt-btn:hover:not(:disabled) { border-color: var(--accent); background: #1a2744; }
+    .opt-btn.correct { background: rgba(34, 197, 94, 0.2) !important; border-color: var(--success) !important; color: #fff; }
+    .opt-btn.incorrect { background: rgba(239, 68, 68, 0.2) !important; border-color: var(--danger) !important; color: #fff; }
+
+    /* Ordering / Sequence List */
+    .timeline-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.25rem; list-style: none; }
+    .timeline-item {
+      background: var(--card-inner); border: 2px solid var(--border); color: var(--text); padding: 0.75rem 0.9rem;
+      border-radius: 8px; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+      user-select: none; transition: border-color 0.2s, background-color 0.2s;
+    }
+    .timeline-item.correct { border-color: var(--success) !important; background: rgba(34, 197, 94, 0.15) !important; }
+    .timeline-item.incorrect { border-color: var(--danger) !important; background: rgba(239, 68, 68, 0.15) !important; }
+    .item-content { display: flex; align-items: center; gap: 0.6rem; flex: 1; }
+    .pos-index { font-weight: 800; color: var(--accent); font-size: 0.85rem; width: 22px; }
+    .event-label { font-size: 0.92rem; font-weight: 500; }
+    .btn-shift-group { display: flex; gap: 0.35rem; }
+    .btn-shift {
+      background: #1e293b; border: 1px solid var(--border); color: var(--text); padding: 0.35rem 0.6rem;
+      border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: bold;
+    }
+    .btn-shift:hover:not(:disabled) { background: var(--accent); color: var(--bg); }
+    .btn-shift:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* Matching Styles */
+    .matching-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+    .matching-table th, .matching-table td { padding: 0.85rem; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.9rem; }
+    .matching-table select {
+      background: var(--card-inner); color: var(--text); border: 2px solid var(--border);
+      padding: 0.5rem; border-radius: 6px; font-size: 0.88rem; width: 100%; outline: none;
+    }
+    .matching-table select:focus { border-color: var(--accent); }
+
+    /* Flashcard Styles */
+    .card-wrap { perspective: 1000px; min-height: 220px; cursor: pointer; }
+    .card-core {
+      position: relative; width: 100%; min-height: 220px; text-align: center;
+      transition: transform 0.4s ease; transform-style: preserve-3d;
+      border: 2px solid var(--border); border-radius: var(--radius);
+      background: var(--card-inner); display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+    }
+    .card-core.flipped { transform: rotateY(180deg); border-color: var(--accent); }
+    .side { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 1.5rem; font-size: 1.15rem; }
+    .side.back { transform: rotateY(180deg); color: var(--text); }
+
+    /* Feedback & Modals */
+    .feedback-box { margin-top: 1rem; padding: 0.85rem; border-radius: 8px; font-size: 0.9rem; line-height: 1.45; display: none; }
+    .feedback-box.show { display: block; }
+    .feedback-box.pass { background: rgba(34, 197, 94, 0.15); border-left: 4px solid var(--success); }
+    .feedback-box.fail { background: rgba(239, 68, 68, 0.15); border-left: 4px solid var(--danger); }
+    .bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+    .action-btn {
+      background: var(--accent); color: var(--bg); border: none; padding: 0.65rem 1.4rem;
+      font-weight: 700; border-radius: 8px; cursor: pointer;
+    }
+    .action-btn:hover { background: var(--accent-hover); }
+
+    .round-complete { display: none; text-align: center; padding: 2rem 1rem; }
+    .round-complete h2 { color: var(--accent); margin-bottom: 0.5rem; }
+    .score-circle { font-size: 2.5rem; font-weight: 800; color: var(--success); margin: 1rem 0; }
+    .reset-link { color: var(--text-muted); font-size: 0.75rem; text-decoration: underline; cursor: pointer; border: none; background: none; margin-top: 1rem; display: inline-block; }
+
+    canvas#confettiCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 999; }
+  </style>
+</head>
+<body>
+  <canvas id="confettiCanvas"></canvas>
+
+  <main class="app-shell" role="main">
+    <header>
+      <h1>General Biology Mastery Arcade</h1>
+      <p>OpenStax Biology 2e • Chapters 10, 11, 12, 14 &amp; 15</p>
+    </header>
+
+    <nav class="arcade-tabs" role="tablist">
+      <button class="tab-btn" id="tab-quiz" role="tab" aria-selected="true" aria-controls="panel-quiz" onclick="switchMode('quiz')">Mastery Quiz (100 MCQ)</button>
+      <button class="tab-btn" id="tab-order" role="tab" aria-selected="false" aria-controls="panel-order" onclick="switchMode('order')">Biological Pathways</button>
+      <button class="tab-btn" id="tab-match" role="tab" aria-selected="false" aria-controls="panel-match" onclick="switchMode('match')">Matching Lab</button>
+      <button class="tab-btn" id="tab-cards" role="tab" aria-selected="false" aria-controls="panel-cards" onclick="switchMode('cards')">Flashcards</button>
+    </nav>
+
+    <!-- 1. MULTIPLE CHOICE PANEL -->
+    <section id="panel-quiz" class="panel active" role="tabpanel" aria-labelledby="tab-quiz">
+      <!-- Chapter Progression Dashboard -->
+      <div class="dashboard">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span class="stat-label">Mastery</span>
+            <span id="dashTotal" class="stat-val">0%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Ch 10</span>
+            <span id="dashCh10" class="stat-val">0 / 20</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Ch 11</span>
+            <span id="dashCh11" class="stat-val">0 / 20</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Ch 12</span>
+            <span id="dashCh12" class="stat-val">0 / 20</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Ch 14</span>
+            <span id="dashCh14" class="stat-val">0 / 20</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Ch 15</span>
+            <span id="dashCh15" class="stat-val">0 / 20</span>
+          </div>
+        </div>
+        <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="quizFill"></div></div>
+      </div>
+
+      <div class="mastery-stats">
+        <span id="quizMasteredText">Mastered: 0 / 100</span>
+        <span id="quizPctText">0% Mastered</span>
+      </div>
+
+      <div id="quizActiveCard" class="card">
+        <div class="card-top">
+          <span class="round-tag" id="quizRoundTag">Question 1 of 10</span>
+          <span class="mastery-badge" id="quizBadge">Mastery: 0/2</span>
+        </div>
+        <p class="question-prompt" id="quizPrompt"></p>
+        <div class="options-grid" id="quizOpts"></div>
+        <div class="feedback-box" id="quizFeedback" role="alert"></div>
+        <div class="bottom-bar" style="justify-content: flex-end;">
+          <button class="action-btn" id="quizNextBtn" style="display:none;" onclick="nextQuizQuestion()">Continue</button>
+        </div>
+      </div>
+
+      <div id="quizCompleteCard" class="card round-complete">
+        <h2>10-Question Round Complete!</h2>
+        <div class="score-circle" id="quizRoundScore">0/10</div>
+        <p id="quizRoundMsg" style="margin-bottom: 1.25rem;"></p>
+        <button class="action-btn" onclick="startQuizRound()">Start Next 10 Questions</button>
+      </div>
+      <center><button class="reset-link" onclick="resetQuizProgress()">Clear Local Storage Engine</button></center>
+    </section>
+
+    <!-- 2. BIOLOGICAL PATHWAYS (ORDERING) PANEL -->
+    <section id="panel-order" class="panel" role="tabpanel" aria-labelledby="tab-order">
+      <div class="mastery-bar-wrap"><div class="mastery-bar-fill" id="orderFill"></div></div>
+      <div class="mastery-stats">
+        <span id="orderMasteredText">Mastered: 0 / 5</span>
+        <span id="orderPctText">0% Mastered</span>
+      </div>
+
+      <div id="orderActiveCard" class="card">
+        <div class="card-top">
+          <span class="round-tag" id="orderRoundTag">Challenge 1 of 5</span>
+          <span class="mastery-badge" id="orderBadge">Mastery: 0/2</span>
+        </div>
+        <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:1rem;" id="orderPrompt"></p>
+        <ul class="timeline-list" id="orderTimeline"></ul>
+        <div class="feedback-box" id="orderFeedback" role="alert"></div>
+        <div class="bottom-bar">
+          <button class="action-btn" id="orderSubmitBtn" onclick="checkOrderSequence()">Submit Sequence</button>
+          <button class="action-btn" id="orderNextBtn" style="display:none;" onclick="nextOrderChallenge()">Continue</button>
+        </div>
+      </div>
+
+      <div id="orderCompleteCard" class="card round-complete">
+        <h2>Pathways Set Complete!</h2>
+        <div class="score-circle" id="orderRoundScore">0/5</div>
+        <p id="orderRoundMsg" style="margin-bottom: 1.25rem;"></p>
+        <button class="action-btn" onclick="startOrderRound()">Start Next Set</button>
+      </div>
+    </section>
+
+    <!-- 3. MATCHING LAB PANEL -->
+    <section id="panel-match" class="panel" role="tabpanel" aria-labelledby="tab-match">
+      <div class="card">
+        <h2 style="font-size:1.15rem; margin-bottom:0.75rem; color:var(--accent);">Genetics &amp; Molecular Biology Matching Lab</h2>
+        <table class="matching-table">
+          <thead><tr><th style="width:60%;">Biological Role / Mechanism</th><th style="width:40%;">Target Enzyme / Concept</th></tr></thead>
+          <tbody id="matchingBody"></tbody>
+        </table>
+        <div class="bottom-bar">
+          <button class="action-btn" onclick="gradeMatching()">Check Matches</button>
+          <span id="matchingScore" style="font-weight:700; font-size:0.95rem;"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. FLASHCARDS PANEL -->
+    <section id="panel-cards" class="panel" role="tabpanel" aria-labelledby="tab-cards">
+      <div class="card">
+        <div class="card-top">
+          <span class="round-tag" id="cardCounter">Card 1 of 10</span>
+          <span style="font-size:0.85rem; color:var(--text-muted);">Tap to Flip</span>
+        </div>
+        <div class="card-wrap" onclick="toggleCard()" tabindex="0">
+          <div class="card-core" id="flashcardCore">
+            <div class="side front" id="cardFront">Front</div>
+            <div class="side back" id="cardBack">Back</div>
+          </div>
+        </div>
+        <div class="bottom-bar" style="margin-top:1.25rem;">
+          <button class="action-btn" onclick="navCard(-1)">Previous</button>
+          <button class="action-btn" onclick="toggleCard()">Flip</button>
+          <button class="action-btn" onclick="navCard(1)">Next</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* ============================================================
+       100 VERIFIED MCQs (OPENSTAX BIOLOGY 2e: CH 10, 11, 12, 14, 15)
+       ============================================================ */
+    const quizQuestions = [
+      // CHAPTER 10: CELL REPRODUCTION (1-20)
+      { id: 1, chapter: 10, q: "During which cell cycle phase does nuclear DNA replication take place?", opts: ["G1 phase", "S phase", "G2 phase", "M phase"], ans: "S phase", exp: "During the Synthesis (S) phase of interphase, the cell completely replicates its genomic DNA." },
+      { id: 2, chapter: 10, q: "Identical chromosomal copies joined at the centromere prior to anaphase are called:", opts: ["Homologous chromosomes", "Sister chromatids", "Non-sister chromatids", "Bivalents"], ans: "Sister chromatids", exp: "Sister chromatids are duplicate copies of a single chromosome joined at the centromere by cohesin proteins." },
+      { id: 3, chapter: 10, q: "The protein complex that assembles at the centromere to anchor mitotic spindle microtubules is the:", opts: ["Centrosome", "Kinetochore", "Telomere", "Astrosphere"], ans: "Kinetochore", exp: "Kinetochores assemble on centromeric DNA to bind kinetochore microtubules of the mitotic spindle." },
+      { id: 4, chapter: 10, q: "Which cell cycle checkpoint assesses adequate cell size, energy reserves, and DNA integrity before commitment to division?", opts: ["G1 checkpoint", "G2 checkpoint", "M checkpoint", "S checkpoint"], ans: "G1 checkpoint", exp: "The G1 checkpoint (restriction point) determines whether conditions are favorable for cell division before DNA synthesis." },
+      { id: 5, chapter: 10, q: "What happens at the M (spindle) checkpoint during mitosis?", opts: ["DNA replication completeness is verified", "Proper attachment of all sister chromatids to spindle microtubules at the metaphase plate is confirmed", "Cyclin B is phosphorylated", "Centrosomes duplicate"], ans: "Proper attachment of all sister chromatids to spindle microtubules at the metaphase plate is confirmed", exp: "The M checkpoint prevents anaphase until all kinetochores are securely anchored to spindle fibers, preventing nondisjunction." },
+      { id: 6, chapter: 10, q: "Which positive regulatory proteins fluctuate in concentration throughout the cell cycle to activate Cdks?", opts: ["Histones", "Cyclins", "Tubulins", "Actins"], ans: "Cyclins", exp: "Cyclin concentrations oscillate through the cell cycle, binding cyclin-dependent kinases (Cdks) to phosphorylate target proteins." },
+      { id: 7, chapter: 10, q: "Which tumor suppressor protein acts as the 'guardian of the genome' by arresting the cell cycle or inducing apoptosis upon DNA damage?", opts: ["Rb", "p53", "p21", "Cdk2"], ans: "p53", exp: "p53 detects damaged genomic DNA, halts the cell cycle at G1 to recruit repair machinery, or activates apoptosis if unrepairable." },
+      { id: 8, chapter: 10, q: "How do cytokinesis mechanisms differ between animal and plant cells?", opts: ["Animal cells build a cell plate; plant cells use an actin cleavage furrow", "Animal cells form an actin-myosin contractile cleavage furrow; plant cells form a pectin-rich Golgi cell plate", "Both form rigid cell plates from the cell membrane", "Neither requires cytoskeletal filaments"], ans: "Animal cells form an actin-myosin contractile cleavage furrow; plant cells form a pectin-rich Golgi cell plate", exp: "Animal cells pinch inward via an actin cleavage furrow; rigid plant walls require Golgi vesicles to fuse into a central cell plate." },
+      { id: 9, chapter: 10, q: "In prokaryotic binary fission, which tubulin-like protein ring orchestrates inward septation?", opts: ["FtsZ", "DnaA", "ParB", "MinC"], ans: "FtsZ", exp: "FtsZ polymerizes into a contractile 'Z-ring' at the midpoint of dividing bacteria to direct septum synthesis." },
+      { id: 10, chapter: 10, q: "The inactive, quiescent state where non-dividing cells exit the active cell cycle is known as:", opts: ["G0 phase", "G1 phase", "S phase", "G2 phase"], ans: "G0 phase", exp: "Cells in G0 are metabolically active but not preparing to divide, either temporarily or permanently (e.g., mature neurons)." },
+      { id: 11, chapter: 10, q: "During which mitotic phase do sister chromatids synchronously separate and move toward opposite spindle poles?", opts: ["Prophase", "Metaphase", "Anaphase", "Telophase"], ans: "Anaphase", exp: "Cohesin proteins are cleaved during anaphase, allowing kinetochore microtubules to pull sister chromatids to opposite poles." },
+      { id: 12, chapter: 10, q: "What event characterizes telophase during eukaryotic mitosis?", opts: ["Chromosomes condense and centrosomes migrate", "Chromosomes align along the equatorial plane", "Nuclear envelopes reform around separated chromatin clusters and nucleoli reappear", "Spindle fibers attach to kinetochores"], ans: "Nuclear envelopes reform around separated chromatin clusters and nucleoli reappear", exp: "Telophase reverses prophase events: the nuclear membrane reassembles, nucleoli reform, and chromosomes decondense." },
+      { id: 13, chapter: 10, q: "Mutated genes that cause normal cells to become cancerous by promoting hyperactive cell proliferation are:", opts: ["Tumor suppressor genes", "Oncogenes", "Proto-oncogenes", "Housekeeping genes"], ans: "Oncogenes", exp: "Oncogenes are mutated, gain-of-function variants of proto-oncogenes that drive unchecked cell division." },
+      { id: 14, chapter: 10, q: "Retinoblastoma protein (Rb) exerts negative regulation on the cell cycle by directly sequestering which transcription factor?", opts: ["E2F", "p53", "c-Myc", "Cdk4"], ans: "E2F", exp: "Unphosphorylated Rb binds and blocks the transcription factor E2F, halting progression until phosphorylated by G1/S Cdks." },
+      { id: 15, chapter: 10, q: "The primary microtubule-organizing center (MTOC) that duplicates during interphase to organize the mitotic spindle is the:", opts: ["Centromere", "Centrosome", "Kinetochore", "Cleavage ring"], ans: "Centrosome", exp: "The centrosome contains a pair of centrioles in animal cells and coordinates spindle microtubule nucleation." },
+      { id: 16, chapter: 10, q: "Condensation of loose euchromatin into visible chromosomes and breakdown of the nucleolus occur during:", opts: ["Prophase", "Prometaphase", "Anaphase", "Telophase"], ans: "Prophase", exp: "During prophase, condensin complexes compact chromatin into visible bodies and nucleoli disperse." },
+      { id: 17, chapter: 10, q: "What is the function of condensin complexes during prophase?", opts: ["Digest the nuclear lamina", "Coil and compact sister chromatid loops into dense mitotic chromosomes", "Hydrolyze ATP to move spindle poles", "Anchor centrosomes to the plasma membrane"], ans: "Coil and compact sister chromatid loops into dense mitotic chromosomes", exp: "Condensin rings structurally organize and compact extended chromatin fibers into dense mitotic units." },
+      { id: 18, chapter: 10, q: "Which Cdk inhibitor protein is directly induced by p53 in response to damaged DNA?", opts: ["p21", "Cyclin D", "Rb", "Securin"], ans: "p21", exp: "p53 transcriptionally activates p21, which binds and inhibits Cdk/cyclin complexes to halt G1-to-S transition." },
+      { id: 19, chapter: 10, q: "What ensures that prokaryotic genomic copies segregate accurately during binary fission?", opts: ["Spindle apparatus microtubules", "Attachment of origin regions to the plasma membrane followed by cell elongation", "A nuclear membrane contractile ring", "Histone octamer disassociation"], ans: "Attachment of origin regions to the plasma membrane followed by cell elongation", exp: "Replicated bacterial origins anchor to cell membrane sites and move apart as the cell elongates prior to FtsZ septation." },
+      { id: 20, chapter: 10, q: "What occurs at the G2 checkpoint before entry into the M phase?", opts: ["Kinetochore microtubule tension is surveyed", "Adequate cell size, protein stores, and complete DNA replication without damage are verified", "Actin ring contraction begins", "Nuclear envelope ruptures"], ans: "Adequate cell size, protein stores, and complete DNA replication without damage are verified", exp: "The G2 checkpoint bars mitotic entry if DNA replication is incomplete or if damaged DNA remains uncorrected." },
+
+      // CHAPTER 11: MEIOSIS AND SEXUAL REPRODUCTION (21-40)
+      { id: 21, chapter: 11, q: "Meiosis produces daughter cells that are:", opts: ["Two genetically identical diploid somatic cells", "Four genetically diverse haploid gametes", "Two haploid clones", "Four diploid spores"], ans: "Four genetically diverse haploid gametes", exp: "Meiosis reduces chromosome number by half through two rounds of division, yielding four haploid gametes with unique allele combinations." },
+      { id: 22, chapter: 11, q: "Synapsis, tetrad formation, and crossing over occur exclusively during which meiotic stage?", opts: ["Prophase I", "Prophase II", "Metaphase I", "Anaphase I"], ans: "Prophase I", exp: "During prophase I, homologous chromosomes pair lengthwise via the synaptonemal complex and exchange DNA segments." },
+      { id: 23, chapter: 11, q: "The physical microscopic points where non-sister chromatids remain crossed over after synaptonemal breakdown are:", opts: ["Kinetochores", "Chiasmata", "Centromeres", "Bivalents"], ans: "Chiasmata", exp: "Chiasmata (singular: chiasma) represent physical crossover sites where homologous arms remain in contact until anaphase I." },
+      { id: 24, chapter: 11, q: "What separates during anaphase I of meiosis?", opts: ["Sister chromatids", "Homologous chromosome pairs", "Centrosomes", "Non-homologous genes"], ans: "Homologous chromosome pairs", exp: "In anaphase I, homologous chromosomes segregate to opposite poles; sister chromatids remain united at their centromeres." },
+      { id: 25, chapter: 11, q: "What separates during anaphase II of meiosis?", opts: ["Homologous chromosomes", "Sister chromatids", "Tetrads", "Histones"], ans: "Sister chromatids", exp: "Anaphase II resembles mitotic anaphase: centromeric cohesin degrades, and sister chromatids segregate as individual chromosomes." },
+      { id: 26, chapter: 11, q: "Independent assortment of maternal and paternal chromosomes occurs during which stage?", opts: ["Metaphase I", "Metaphase II", "Telophase I", "Prophase II"], ans: "Metaphase I", exp: "The random orientation of homologous pairs along the metaphase plate in metaphase I creates independent allele assortment." },
+      { id: 27, chapter: 11, q: "The brief resting interval between meiosis I and meiosis II, during which no DNA replication occurs, is:", opts: ["Interkinesis", "Interphase S", "G2 checkpoint", "Metaphase plate"], ans: "Interkinesis", exp: "Interkinesis is a brief pause between meiotic divisions where centrosomes duplicate, but genomic DNA is not replicated." },
+      { id: 28, chapter: 11, q: "Organisms with an alternation of generations life cycle (such as plants) alternate between which multicellular stages?", opts: ["Unicellular haploid gametes and diploid zygotes", "Haploid gametophyte and diploid sporophyte", "Diploid gametophyte and haploid sporophyte", "Polyploid clones and haploid spores"], ans: "Haploid gametophyte and diploid sporophyte", exp: "Plants alternate between a multicellular haploid gametophyte (producing gametes by mitosis) and a diploid sporophyte (producing spores by meiosis)." },
+      { id: 29, chapter: 11, q: "Failure of homologous chromosomes or sister chromatids to separate properly during meiosis is called:", opts: ["Synapsis", "Nondisjunction", "Inversion", "Translocation"], ans: "Nondisjunction", exp: "Nondisjunction causes abnormal gamete chromosome counts (aneuploidy), giving rise to monosomy or trisomy." },
+      { id: 30, chapter: 11, q: "Which human condition is caused by trisomy of chromosome 21 resulting from nondisjunction?", opts: ["Turner syndrome", "Down syndrome", "Klinefelter syndrome", "Cri-du-chat syndrome"], ans: "Down syndrome", exp: "Down syndrome results from nondisjunction yielding three copies of autosomal chromosome 21 (47, +21)." },
+      { id: 31, chapter: 11, q: "The protein lattice that zips paired homologous chromosomes together during early prophase I is the:", opts: ["Synaptonemal complex", "Kinetochore plate", "Condensin axis", "Cohesin barrel"], ans: "Synaptonemal complex", exp: "The synaptonemal complex is a protein zipper that facilitates tight genetic alignment and crossing over during prophase I." },
+      { id: 32, chapter: 11, q: "An individual possessing the sex chromosome constitution 45,X has which genetic condition?", opts: ["Klinefelter syndrome", "Turner syndrome", "Triple X syndrome", "Jacob syndrome"], ans: "Turner syndrome", exp: "Turner syndrome is characterized by monosomy of the X chromosome (45,X), causing female phenotypic characteristics and sterility." },
+      { id: 33, chapter: 11, q: "Which evolutionary hypothesis states that sexual reproduction persists because species must constantly adapt to co-evolving parasites?", opts: ["Central Dogma Hypothesis", "Red Queen Hypothesis", "Neutral Mutation Theory", "Endosymbiotic Hypothesis"], ans: "Red Queen Hypothesis", exp: "The Red Queen Hypothesis argues that sexual reproduction generates genetic variation necessary to survive competing co-evolving parasites and pathogens." },
+      { id: 34, chapter: 11, q: "In human spermatogenesis, how many functional spermatozoa develop from a single primary spermatocyte?", opts: ["One", "Two", "Four", "Eight"], ans: "Four", exp: "Spermatogenesis divides symmetrically, yielding four functional haploid sperm from each primary spermatocyte." },
+      { id: 35, chapter: 11, q: "In human oogenesis, asymmetric cytokinesis during meiosis yields one functional ovum and three nonfunctional:", opts: ["Polar bodies", "Spermatids", "Gametophores", "Blastocysts"], ans: "Polar bodies", exp: "Oogenesis concentrates cytoplasm into a single viable ovum, shedding excess chromosomes into small, degenerating polar bodies." },
+      { id: 36, chapter: 11, q: "A chromosome inversion that includes the centromere within the inverted segment is called:", opts: ["Paracentric inversion", "Pericentric inversion", "Reciprocal translocation", "Robertsonian translocation"], ans: "Pericentric inversion", exp: "Pericentric inversions span the centromere and can change the relative lengths of chromosome arms." },
+      { id: 37, chapter: 11, q: "A chromosome structural alteration where a detached chromosomal fragment reattaches to a non-homologous chromosome is a:", opts: ["Translocation", "Inversion", "Duplication", "Delection"], ans: "Translocation", exp: "Translocations occur when broken chromosome segments fuse to non-homologous chromosomes (e.g., Philadelphia chromosome)." },
+      { id: 38, chapter: 11, q: "The condensed, transcriptionally inactive X chromosome observed in somatic nuclei of mammalian females is a:", opts: ["Barr body", "Centrosome", "Telomere", "Bivalent"], ans: "Barr body", exp: "To achieve dosage compensation, mammalian females randomly lyonize one X chromosome into a heterochromatic Barr body." },
+      { id: 39, chapter: 11, q: "Which genetic sex chromosome composition results in Klinefelter syndrome?", opts: ["45,X", "47,XXY", "47,XYY", "47,XXX"], ans: "47,XXY", exp: "Klinefelter syndrome is caused by an extra X chromosome in biological males (47,XXY)." },
+      { id: 40, chapter: 11, q: "Polyploidy refers to an organism possessing:", opts: ["One extra individual chromosome", "One missing individual chromosome", "Three or more complete sets of chromosomes", "A single inverted chromatid"], ans: "Three or more complete sets of chromosomes", exp: "Polyploidy indicates extra complete sets of chromosomes (e.g., 3n triploid, 4n tetraploid), common in plants." },
+
+      // CHAPTER 12: MENDEL'S EXPERIMENTS AND HEREDITY (41-60)
+      { id: 41, chapter: 12, q: "Alternative nucleotide sequence forms of the same gene located at matching loci are called:", opts: ["Phenotypes", "Alleles", "Genomes", "Complements"], ans: "Alleles", exp: "Alleles are sequence variations of a gene that produce different traits." },
+      { id: 42, chapter: 12, q: "An organism possessing two identical alleles for a specific gene (e.g., BB or bb) is:", opts: ["Heterozygous", "Homozygous", "Hemizygous", "Epistatic"], ans: "Homozygous", exp: "Homozygous organisms have two identical alleles at a given locus." },
+      { id: 43, chapter: 12, q: "Mendel's Law of Segregation states that:", opts: ["Non-homologous chromosomes sort independently", "Two alleles of a gene separate during gamete formation so each gamete carries only one", "Dominant alleles blend with recessive alleles", "Linked genes never separate"], ans: "Two alleles of a gene separate during gamete formation so each gamete carries only one", exp: "The Law of Segregation states that paired alleles disjoin during meiosis, with each gamete receiving one allele." },
+      { id: 44, chapter: 12, q: "What expected phenotypic ratio appears in the F2 generation of a classic Mendelian monohybrid cross (Bb x Bb)?", opts: ["1:2:1", "3:1", "9:3:3:1", "1:1:1:1"], ans: "3:1", exp: "Monohybrid crosses yield a 3:1 phenotypic ratio (3 dominant to 1 recessive) and a 1:2:1 genotypic ratio." },
+      { id: 45, chapter: 12, q: "What expected phenotypic ratio emerges in the F2 generation of an independent Mendelian dihybrid cross (AaBb x AaBb)?", opts: ["3:1", "9:3:3:1", "1:2:1", "12:3:1"], ans: "9:3:3:1", exp: "A dihybrid cross involving two unlinked, heterozygous gene pairs yields a 9:3:3:1 phenotypic ratio." },
+      { id: 46, chapter: 12, q: "What experimental breeding cross determines whether an individual displaying a dominant phenotype is homozygous or heterozygous?", opts: ["Reciprocal cross", "Test cross (crossing with a homozygous recessive)", "Dihybrid cross", "Self-fertilization"], ans: "Test cross (crossing with a homozygous recessive)", exp: "A test cross pairs the dominant-phenotype subject with a homozygous recessive mate; recessive progeny confirm heterozygosity." },
+      { id: 47, chapter: 12, q: "The inheritance pattern where heterozygotes display an intermediate, blended phenotype (e.g., red x white producing pink flowers) is:", opts: ["Codominance", "Incomplete dominance", "Complete dominance", "Epistasis"], ans: "Incomplete dominance", exp: "In incomplete dominance, neither allele is fully dominant, producing an intermediate heterozygous phenotype." },
+      { id: 48, chapter: 12, q: "The ABO blood grouping system in humans demonstrates which inheritance phenomenon?", opts: ["Incomplete dominance", "Multiple alleles and codominance", "Polygenic inheritance", "X-linked recessiveness"], ans: "Multiple alleles and codominance", exp: "The ABO gene involves three alleles ($I^A$, $I^B$, $i$); alleles $I^A$ and $I^B$ are codominant, both expressing surface antigens." },
+      { id: 49, chapter: 12, q: "The phenomenon where one gene masks or interferes with the phenotypic expression of a separate gene is:", opts: ["Pleiotropy", "Epistasis", "Incomplete penetrance", "Polygeny"], ans: "Epistasis", exp: "Epistasis occurs when an allele at one locus masks the phenotypic output of a distinct gene locus (e.g., coat color in retrievers)." },
+      { id: 50, chapter: 12, q: "When a single gene mutation influences multiple distinct, unrelated phenotypic characteristics, this is:", opts: ["Pleiotropy", "Polygenic inheritance", "Epistasis", "Codominance"], ans: "Pleiotropy", exp: "Pleiotropy occurs when one gene impacts multiple physiological systems (e.g., sickle-cell anemia or Marfan syndrome)." },
+      { id: 51, chapter: 12, q: "Human skin pigmentation and adult height exhibit continuous variation because they are governed by:", opts: ["Single-gene complete dominance", "Polygenic inheritance", "X-linked recessive mutations", "Maternal mitochondrial DNA"], ans: "Polygenic inheritance", exp: "Polygenic traits are controlled by the additive effects of multiple genes, displaying bell-curve phenotypic distributions." },
+      { id: 52, chapter: 12, q: "Why do males express X-linked recessive disorders (such as red-green color blindness and hemophilia) more frequently than females?", opts: ["Males possess two active X chromosomes", "Males are hemizygous (XY), expressing any recessive allele present on their single X chromosome", "The Y chromosome actively silences the X chromosome", "Spermatogenesis introduces higher mutation rates"], ans: "Males are hemizygous (XY), expressing any recessive allele present on their single X chromosome", exp: "Because human males have only one X chromosome, a recessive allele on that X is expressed directly without masking." },
+      { id: 53, chapter: 12, q: "In a pedigree analysis, a condition that appears in both sexes with equal frequency and skips generations is likely:", opts: ["Autosomal dominant", "Autosomal recessive", "X-linked dominant", "Y-linked"], ans: "Autosomal recessive", exp: "Autosomal recessive traits affect males and females equally and can skip generations via unaffected heterozygous carriers." },
+      { id: 54, chapter: 12, q: "Which genetic condition exhibits late-onset autosomal dominant inheritance, degrading basal ganglia and cortical neurons in mid-adulthood?", opts: ["Cystic fibrosis", "Huntington's disease", "Tay-Sachs disease", "Hemophilia A"], ans: "Huntington's disease", exp: "Huntington's disease is an autosomal dominant neurodegenerative CAG-repeat disorder that typically manifests in middle age." },
+      { id: 55, chapter: 12, q: "What term describes the proportion of individuals carrying a genotype who express the associated clinical phenotype?", opts: ["Expressivity", "Penetrance", "Pleiotropy", "Heritability"], ans: "Penetrance", exp: "Penetrance is the percentage of individuals with a given genotype who exhibit the expected phenotype." },
+      { id: 56, chapter: 12, q: "The degree or severity to which a given genotype is phenotypically expressed in an individual is its:", opts: ["Expressivity", "Penetrance", "Epistasis", "Dominance"], ans: "Expressivity", exp: "Variable expressivity describes differences in trait severity among individuals with identical genotypes." },
+      { id: 57, chapter: 12, q: "Thomas Hunt Morgan discovered sex-linked transmission while tracking which trait in Drosophila melanogaster?", opts: ["Vestigial wings", "White eye mutation", "Yellow body color", "Bar eye shape"], ans: "White eye mutation", exp: "Morgan tracked white-eyed Drosophila, showing the allele was linked to the X chromosome and confirming chromosome theory." },
+      { id: 58, chapter: 12, q: "Genes located physically close together on the same chromosome that tend to be inherited together violate which Mendelian law?", opts: ["Law of Segregation", "Law of Independent Assortment", "Law of Dominance", "Law of Uniformity"], ans: "Law of Independent Assortment", exp: "Syntenic, closely linked genes travel together during meiotic assortment unless separated by a crossover event." },
+      { id: 59, chapter: 12, q: "A recombination frequency of 1% between two linked genetic markers is defined as:", opts: ["One centimorgan (cM) or map unit", "Ten base pairs", "One kilobase", "One locus"], ans: "One centimorgan (cM) or map unit", exp: "One centimorgan (cM) corresponds to a 1% recombination frequency between linked loci." },
+      { id: 60, chapter: 12, q: "An individual possessing an AB blood type produces which red blood cell carbohydrate antigens?", opts: ["Only A antigens", "Only B antigens", "Both A and B antigens", "Neither A nor B antigens"], ans: "Both A and B antigens", exp: "Codominant alleles $I^A$ and $I^B$ cause erythrocytes to express both A and B surface glycoprotein antigens." },
+
+      // CHAPTER 14: DNA STRUCTURE AND FUNCTION (61-80)
+      { id: 61, chapter: 14, q: "Which classic experiment used bacteriophage T2 labeled with 32P and 35S to prove that DNA is the genetic material?", opts: ["Griffith's transformation experiment", "Hershey-Chase blender experiment", "Meselson-Stahl experiment", "Avery-MacLeod-McCarty experiment"], ans: "Hershey-Chase blender experiment", exp: "Hershey and Chase demonstrated that radioactive phosphorus-32 (DNA), not sulfur-35 (protein), enters bacterial cells during infection." },
+      { id: 62, chapter: 14, q: "According to Chargaff's rules, chemical analysis of double-stranded DNA reveals that:", opts: ["Purines equal ribonucleotides", "Adenine percentage equals thymine, and guanine percentage equals cytosine", "Adenine equals guanine", "Cytosine percentage matches uracil"], ans: "Adenine percentage equals thymine, and guanine percentage equals cytosine", exp: "Chargaff showed that in dsDNA, %A = %T and %G = %C due to specific complementary hydrogen bonding." },
+      { id: 63, chapter: 14, q: "What type of chemical bond joins adjacent nucleotides along the backbones of a DNA strand?", opts: ["Peptide bonds", "Phosphodiester bonds", "Hydrogen bonds", "Glycosidic bonds"], ans: "Phosphodiester bonds", exp: "Phosphodiester linkages connect the 3'-OH group of one deoxyribose to the 5'-phosphate group of the adjacent nucleotide." },
+      { id: 64, chapter: 14, q: "How many hydrogen bonds form between a guanine-cytosine (G-C) complementary base pair in DNA?", opts: ["One", "Two", "Three", "Four"], ans: "Three", exp: "G-C base pairs share three hydrogen bonds, making them thermally more stable than A-T base pairs (two hydrogen bonds)." },
+      { id: 65, chapter: 14, q: "Which experiment used 15N and 14N density-gradient centrifugation to prove that DNA replicates semi-conservatively?", opts: ["Hershey-Chase experiment", "Meselson-Stahl experiment", "Griffith transformation", "Fraenkel-Conrat experiment"], ans: "Meselson-Stahl experiment", exp: "Meselson and Stahl tracked heavy nitrogen ($^{15}\text{N}$) through replication cycles, confirming semi-conservative strand distribution." },
+      { id: 66, chapter: 14, q: "Which enzyme unzips and unwinds double-stranded DNA at the replication fork by breaking hydrogen bonds?", opts: ["DNA topoisomerase", "DNA helicase", "DNA ligase", "Primase"], ans: "DNA helicase", exp: "DNA helicase uses ATP to break base-pair hydrogen bonds, unwinding the double helix ahead of the replication fork." },
+      { id: 67, chapter: 14, q: "What is the function of topoisomerase (gyrase) during DNA replication?", opts: ["Synthesize RNA primers", "Relieve supercoiling and torsional strain ahead of the replication fork", "Ligate Okazaki fragments", "Proofread mismatched bases"], ans: "Relieve supercoiling and torsional strain ahead of the replication fork", exp: "Topoisomerase makes transient single- or double-strand cuts to relieve rotational tension induced by helicase unwinding." },
+      { id: 68, chapter: 14, q: "Why can DNA polymerases only synthesize new strands in the 5'-to-3' direction?", opts: ["They can only add incoming dNTPs to a free 3'-OH group", "They are structurally blocked by the 5' carbon", "Primers only bind to 3' ends", "Pyrimidines cannot accept 5' phosphates"], ans: "They can only add incoming dNTPs to a free 3'-OH group", exp: "DNA polymerases require a free 3'-OH group to catalyze the nucleophilic attack on the alpha-phosphate of an incoming dNTP." },
+      { id: 69, chapter: 14, q: "The short segments of DNA synthesized discontinuously along the lagging strand during replication are:", opts: ["Okazaki fragments", "Pribnow boxes", "Introns", "Telomeres"], ans: "Okazaki fragments", exp: "The lagging strand is synthesized discontinuously away from the replication fork in short Okazaki fragments." },
+      { id: 70, chapter: 14, q: "Which enzyme synthesizes short RNA primers required for DNA polymerases to initiate synthesis?", opts: ["RNA primase", "DNA ligase", "RNA polymerase II", "Telomerase"], ans: "RNA primase", exp: "Primase creates an RNA primer complementary to the template, providing the free 3'-OH end required by DNA polymerase." },
+      { id: 71, chapter: 14, q: "Which enzyme covalently seals nicks in the phosphodiester backbone between adjacent Okazaki fragments?", opts: ["DNA helicase", "DNA ligase", "Topoisomerase", "Exonuclease"], ans: "DNA ligase", exp: "DNA ligase catalyzes phosphodiester bond formation between adjacent 3'-OH and 5'-phosphate ends to join fragments." },
+      { id: 72, chapter: 14, q: "Which enzyme synthesizes repetitive non-coding terminal sequences (TTAGGG) to protect eukaryotic chromosome ends?", opts: ["Telomerase", "Primase", "Poly-A polymerase", "Endonuclease"], ans: "Telomerase", exp: "Telomerase uses an internal RNA template to extend eukaryotic telomeres, counteracting replication end-shortening." },
+      { id: 73, chapter: 14, q: "The intrinsic proofreading capability of DNA polymerase relies on which enzymatic activity?", opts: ["5'-to-3' exonuclease activity", "3'-to-5' exonuclease activity", "Endonuclease cleavage", "Helicase reversal"], ans: "3'-to-5' exonuclease activity", exp: "DNA polymerases use 3'-to-5' exonuclease activity to excise mismatched terminal nucleotides before resuming synthesis." },
+      { id: 74, chapter: 14, q: "What repair mechanism detects and excises bulky thymine dimers caused by UV radiation damage?", opts: ["Nucleotide excision repair (NER)", "Mismatch repair", "Non-homologous end joining", "Photolyase disjunction"], ans: "Nucleotide excision repair (NER)", exp: "NER endonucleases excise a multi-nucleotide segment containing the UV-induced thymine dimer, allowing polymerase and ligase to patch the gap." },
+      { id: 75, chapter: 14, q: "The structural spool unit around which eukaryotic DNA winds, composed of an octamer of basic proteins, is a:", opts: ["Nucleosome", "Ribosome", "Spliceosome", "Kinetochore"], ans: "Nucleosome", exp: "Nucleosomes consist of ~147 base pairs of DNA wrapped around an octamer of histone proteins (two each of H2A, H2B, H3, H4)." },
+      { id: 76, chapter: 14, q: "Tightly packed, condensed chromatin that is transcriptionally silent is classified as:", opts: ["Euchromatin", "Heterochromatin", "Polysome", "Centromeric euchromatin"], ans: "Heterochromatin", exp: "Heterochromatin is condensed, transcriptionally inactive chromatin; euchromatin is open and accessible for transcription." },
+      { id: 77, chapter: 14, q: "In Fred Griffith's 1928 transformation experiment, which mixture caused fatal pneumonia in mice?", opts: ["Heat-killed non-virulent R strain alone", "Heat-killed virulent S strain alone", "Living non-virulent R strain mixed with heat-killed virulent S strain", "Living virulent S strain boiled for 24 hours"], ans: "Living non-virulent R strain mixed with heat-killed virulent S strain", exp: "The living R strain absorbed the 'transforming principle' (DNA) from the dead S strain, transforming into virulent S cells." },
+      { id: 78, chapter: 14, q: "Which pair of scientists deduced the antiparallel double-helix structure of DNA using Rosalind Franklin's Photo 51?", opts: ["James Watson and Francis Crick", "Alfred Hershey and Martha Chase", "Matthew Meselson and Franklin Stahl", "George Beadle and Edward Tatum"], ans: "James Watson and Francis Crick", exp: "Watson and Crick derived the double-helical antiparallel model in 1953, using X-ray diffraction data collected by Franklin." },
+      { id: 79, chapter: 14, q: "Single-stranded DNA-binding proteins (SSBs) function during DNA replication to:", opts: ["Synthesize primer RNA", "Prevent separated template strands from prematurely re-annealing", "Degrade mismatched pairs", "Ligate lagging segments"], ans: "Prevent separated template strands from prematurely re-annealing", exp: "SSBs coat single-stranded DNA to prevent reannealing or secondary hairpin formation until polymerases pass." },
+      { id: 80, chapter: 14, q: "A point mutation that substitutes one purine for another purine (e.g., A to G) is classified as a:", opts: ["Transition", "Transversion", "Frameshift", "Inversion"], ans: "Transition", exp: "Transitions exchange similar bases (purine-to-purine or pyrimidine-to-pyrimidine); transversions swap purines for pyrimidines." },
+
+      // CHAPTER 15: GENES AND PROTEINS (81-100)
+      { id: 81, chapter: 15, q: "According to the Central Dogma of Molecular Biology, genetic information flows sequentially from:", opts: ["Protein -> RNA -> DNA", "DNA -> RNA -> Protein", "RNA -> DNA -> Protein", "DNA -> Protein -> RNA"], ans: "DNA -> RNA -> Protein", exp: "The Central Dogma outlines directional genetic transfer: DNA is transcribed into RNA, which is translated into polypeptides." },
+      { id: 82, chapter: 15, q: "During transcription, which enzyme synthesizes pre-mRNA from a DNA template strand in eukaryotes?", opts: ["DNA polymerase I", "RNA polymerase II", "DNA ligase", "Ribosome"], ans: "RNA polymerase II", exp: "RNA polymerase II transcribes all protein-coding pre-mRNAs in eukaryotic nuclei." },
+      { id: 83, chapter: 15, q: "The conserved AT-rich promoter sequence that establishes the transcription start site in eukaryotes is the:", opts: ["Pribnow box", "TATA box", "Shine-Dalgarno sequence", "CAAT box"], ans: "TATA box", exp: "The TATA box (~25-30 bp upstream of transcription initiation) binds TATA-binding protein (TBP) to position RNA polymerase II." },
+      { id: 84, chapter: 15, q: "Which post-transcriptional modification is added to the 5' end of eukaryotic pre-mRNA to prevent degradation and facilitate ribosome binding?", opts: ["Poly-A tail", "7-methylguanosine cap (5' cap)", "Intronic splice loop", "Shine-Dalgarno leader"], ans: "7-methylguanosine cap (5' cap)", exp: "The 5' cap protects pre-mRNA from exonucleolytic decay and facilitates nuclear export and translation initiation." },
+      { id: 85, chapter: 15, q: "What enzyme adds a protective stretch of adenine residues to the 3' end of processed eukaryotic mRNA?", opts: ["Poly-A polymerase", "RNA ligase", "Telomerase", "Topoisomerase"], ans: "Poly-A polymerase", exp: "Poly-A polymerase adds ~200 adenine nucleotides to the cleaved 3' end, stabilizing the mRNA and promoting translation." },
+      { id: 86, chapter: 15, q: "The non-coding intervening sequences excised from eukaryotic pre-mRNA by the spliceosome are called:", opts: ["Exons", "Introns", "Cistrons", "Codons"], ans: "Introns", exp: "Introns are non-coding sequences spliced out of pre-mRNA; exons are retained and ligated together into the coding transcript." },
+      { id: 87, chapter: 15, q: "What molecular complex composed of snRNAs and proteins performs pre-mRNA splicing?", opts: ["Spliceosome", "Proteasome", "Ribosome", "Nucleosome"], ans: "Spliceosome", exp: "Spliceosomes consist of small nuclear ribonucleoproteins (snRNPs) that excise introns and ligate exons." },
+      { id: 88, chapter: 15, q: "The mechanism that allows a single primary gene transcript to generate multiple distinct protein isoforms is:", opts: ["Alternative splicing", "Frameshift recombination", "Polyadenylation reduction", "Gene amplification"], ans: "Alternative splicing", exp: "Alternative splicing selectively includes or excludes different exons, expanding proteomic diversity from a single gene." },
+      { id: 89, chapter: 15, q: "What is the universal translation initiation (start) codon, and which amino acid does it encode?", opts: ["UGA (Stop)", "AUG (Methionine)", "UAA (Leucine)", "GUG (Valine)"], ans: "AUG (Methionine)", exp: "AUG serves as the universal start codon, coding for methionine in eukaryotes and N-formylmethionine in prokaryotes." },
+      { id: 90, chapter: 15, q: "Which trio of codons signals the termination of polypeptide synthesis during translation?", opts: ["AUG, GUG, UUG", "UAA, UAG, UGA", "AAC, UAC, GAC", "CCA, CCC, CCU"], ans: "UAA, UAG, UGA", exp: "UAA (ochre), UAG (amber), and UGA (opal) are stop codons recognized by release factors rather than aminoacyl-tRNAs." },
+      { id: 91, chapter: 15, q: "The genetic code is described as 'degenerate' because:", opts: ["One codon specifies multiple different amino acids", "Multiple different codons can encode the same amino acid", "Stop codons mutate into sense codons", "Codon usage differs across every phylum"], ans: "Multiple different codons can encode the same amino acid", exp: "Degeneracy means 61 sense codons specify 20 standard amino acids; multiple triplets often specify the same amino acid." },
+      { id: 92, chapter: 15, q: "Which enzymes catalyze the covalent charging of tRNAs with their corresponding specific amino acids?", opts: ["Aminoacyl-tRNA synthetases", "Peptidyl transferases", "RNA polymerases", "Ribozymes"], ans: "Aminoacyl-tRNA synthetases", exp: "Aminoacyl-tRNA synthetases match an amino acid to its cognate tRNA using ATP hydrolysis." },
+      { id: 93, chapter: 15, q: "At which ribosomal site does an incoming charged aminoacyl-tRNA enter during the elongation cycle?", opts: ["A (aminoacyl) site", "P (peptidyl) site", "E (exit) site", "TATA site"], ans: "A (aminoacyl) site", exp: "Incoming aminoacyl-tRNA enters the A site; peptide bond formation occurs next, shifting the chain to the P site." },
+      { id: 94, chapter: 15, q: "Peptide bond formation between adjacent amino acids in the ribosome is catalyzed by which ribozyme activity?", opts: ["Peptidyl transferase (28S/23S rRNA)", "DNA polymerase II", "Aminoacyl synthetase", "Exonuclease"], ans: "Peptidyl transferase (28S/23S rRNA)", exp: "Peptidyl transferase is a catalytic ribozyme function of the large ribosomal subunit rRNA, not a protein enzyme." },
+      { id: 95, chapter: 15, q: "A point mutation that alters a codon to specify a completely different amino acid is a:", opts: ["Silent mutation", "Missense mutation", "Nonsense mutation", "Frameshift mutation"], ans: "Missense mutation", exp: "Missense mutations alter a single codon, causing one amino acid replacement (e.g., Glu to Val in sickle-cell anemia)." },
+      { id: 96, chapter: 15, q: "A point mutation that prematurely converts an amino acid codon into a stop codon (UAA, UAG, or UGA) is a:", opts: ["Silent mutation", "Nonsense mutation", "Missense mutation", "Transversion"], ans: "Nonsense mutation", exp: "Nonsense mutations introduce premature stop codons, leading to truncated, typically nonfunctional polypeptides." },
+      { id: 97, chapter: 15, q: "Nucleotide insertions or deletions not occurring in multiples of three cause which type of mutation?", opts: ["Frameshift mutation", "Silent mutation", "Missense transition", "Inversion"], ans: "Frameshift mutation", exp: "Indels of 1 or 2 nucleotides shift the downstream triplet reading frame, scrambling all subsequent amino acids." },
+      { id: 98, chapter: 15, q: "What nucleotide sequence on prokaryotic mRNA positions the 30S ribosomal subunit upstream of the start codon?", opts: ["Pribnow box", "Shine-Dalgarno sequence", "Kozak consensus", "Poly-A signal"], ans: "Shine-Dalgarno sequence", exp: "The Shine-Dalgarno sequence pairs with the 16S rRNA of the small bacterial ribosomal subunit to align AUG in the P site." },
+      { id: 99, chapter: 15, q: "What molecular factor binds the stop codon in the ribosomal A site to release the completed polypeptide?", opts: ["Termination tRNA", "Release factor", "Aminoacyl synthetase", "Poly-A polymerase"], ans: "Release factor", exp: "Release factors bind to A-site stop codons, prompting peptidyl transferase to hydrolyze the ester bond and release the chain." },
+      { id: 100, chapter: 15, q: "Francis Crick's Wobble Hypothesis explains why:", opts: ["Stop codons occasionally bind amino acids", "Non-standard base pairing can occur between the 3' base of an mRNA codon and the 5' anticodon base", "Ribosomes wobble across the endoplasmic reticulum", "RNA polymerase skips intronic codons"], ans: "Non-standard base pairing can occur between the 3' base of an mRNA codon and the 5' anticodon base", exp: "The Wobble Hypothesis explains how 40-some tRNAs decode 61 sense codons via flexible pairing at the third codon position." }
+    ];
+
+    /* ============================================================
+       PATHWAYS / ORDERING LAB (5 BIOLOGICAL PROCESS CHALLENGES)
+       ============================================================ */
+    const orderChallenges = [
+      {
+        id: 1,
+        title: "Mitosis Phase Progression",
+        steps: [
+          { text: "Prophase (Chromatin condenses, centrosomes separate, nucleolus disappears)" },
+          { text: "Prometaphase (Nuclear envelope breaks down, kinetochores bind spindle fibers)" },
+          { text: "Metaphase (Chromosomes align along equatorial metaphase plate)" },
+          { text: "Anaphase (Sister chromatids cleave cohesin and migrate toward opposite poles)" },
+          { text: "Telophase & Cytokinesis (Nuclear envelopes reassemble, contractile furrow pinches cells)" }
+        ],
+        rationale: "Mitotic sequence: Prophase → Prometaphase → Metaphase → Anaphase → Telophase/Cytokinesis."
+      },
+      {
+        id: 2,
+        title: "Meiosis I Chromosomal Dynamics",
+        steps: [
+          { text: "Leptotene/Zygotene (Homologs locate and initiate synaptonemal pairing)" },
+          { text: "Pachytene (Crossing over occurs between non-sister chromatids at chiasmata)" },
+          { text: "Metaphase I (Bivalents align randomly along equatorial plate for independent assortment)" },
+          { text: "Anaphase I (Homologous pairs segregate to opposite poles; sister chromatids stay united)" },
+          { text: "Telophase I & Interkinesis (Haploid nuclei temporarily re-form without DNA replication)" }
+        ],
+        rationale: "Meiosis I progression: Pairing/Synapsis → Recombination (Crossing Over) → Metaphase I alignment → Homolog segregation → Interkinesis."
+      },
+      {
+        id: 3,
+        title: "Leading-Strand DNA Replication Steps",
+        steps: [
+          { text: "DNA Helicase binds origin and unzips parent strands; Topoisomerase relieves supercoiling" },
+          { text: "Single-Stranded Binding Proteins (SSBs) coat templates to prevent premature re-annealing" },
+          { text: "RNA Primase synthesizes a complementary RNA primer providing a free 3'-OH group" },
+          { text: "DNA Polymerase III extends the new strand continuously in the 5'-to-3' direction" },
+          { text: "DNA Polymerase I excises RNA primer; DNA Ligase seals the phosphodiester backbone" }
+        ],
+        rationale: "Leading-strand synthesis: Helicase unwinding → SSB stabilization → Primase priming → Polymerase elongation → Primer excision & ligation."
+      },
+      {
+        id: 4,
+        title: "Eukaryotic Pre-mRNA Processing Steps",
+        steps: [
+          { text: "Transcription initiation: RNA Polymerase II clears promoter TATA box" },
+          { text: "5' Capping: Addition of 7-methylguanosine cap to emerging transcript end" },
+          { text: "Spliceosome assembly: Intron excision and covalent exon ligation" },
+          { text: "3' Cleavage & Polyadenylation: Poly-A polymerase synthesizes ~200-residue poly-A tail" },
+          { text: "Nuclear Export: Mature mRNA translocates through nuclear pores into cytoplasm" }
+        ],
+        rationale: "mRNA processing order: Initiation → 5' Capping → Splicing → 3' Polyadenylation → Cytoplasmic export."
+      },
+      {
+        id: 5,
+        title: "Translation Elongation Cycle Steps",
+        steps: [
+          { text: "Codon recognition: Charged aminoacyl-tRNA binds the complementary mRNA codon in the A site" },
+          { text: "Peptidyl transfer: Ribosome catalytic rRNA forms peptide bond, transferring chain to A-site tRNA" },
+          { text: "Translocation: Ribosome shifts three nucleotides forward along mRNA using EF-G/GTP" },
+          { text: "Exit: Uncharged tRNA discharges from E site as new codon presents in open A site" }
+        ],
+        rationale: "Translation elongation cycle: A-site binding → Peptidyl transferase catalysis → Ribosomal translocation → E-site tRNA discharge."
+      }
+    ];
+
+    /* ============================================================
+       MATCHING LAB DATA
+       ============================================================ */
+    const matchingItems = [
+      { desc: "Enzyme that relieves torsional supercoiling ahead of the replication fork", correct: "Topoisomerase" },
+      { desc: "Enzyme that synthesizes RNA primers for DNA polymerases", correct: "RNA Primase" },
+      { desc: "Enzyme that joins Okazaki fragments by sealing phosphodiester nicks", correct: "DNA Ligase" },
+      { desc: "Enzyme maintaining eukaryotic telomeric ends using an internal RNA guide", correct: "Telomerase" },
+      { desc: "Enzymes that covalently charge tRNAs with their matching amino acids", correct: "Aminoacyl-tRNA Synthetases" },
+      { desc: "Catalytic ribonucleic core of the large ribosomal subunit forming peptide bonds", correct: "Peptidyl Transferase" },
+      { desc: "Protein ring complex directing bacterial septation during binary fission", correct: "FtsZ Ring" },
+      { desc: "Protein zipper stabilizing paired homologous chromosomes during meiotic crossing over", correct: "Synaptonemal Complex" }
+    ];
+
+    /* ============================================================
+       FLASHCARD DATA
+       ============================================================ */
+    const flashcards = [
+      { term: "Kinetochore", def: "Multiprotein complex assembled on the centromere that anchors mitotic spindle microtubules to pull chromatids apart." },
+      { term: "p53 Tumor Suppressor", def: "Transcription factor that senses genomic damage and activates p21 (Cdk inhibition) or triggers apoptosis." },
+      { term: "Chiasma (pl. Chiasmata)", def: "X-shaped microscopic points of physical contact where non-sister chromatids cross over during meiotic prophase I." },
+      { term: "Test Cross", def: "Breeding an individual displaying a dominant phenotype with a homozygous recessive individual to deduce genotype." },
+      { term: "Epistasis", def: "A genetic interaction where an allele at one locus masks or overrides the phenotypic expression of a separate gene locus." },
+      { term: "Okazaki Fragments", def: "Short stretches of DNA synthesized discontinuously along the lagging template strand during replication." },
+      { term: "Nucleosome", def: "Eukaryotic chromatin packaging unit composed of ~147 bp of DNA wound around an octamer of basic histone proteins." },
+      { term: "TATA Box", def: "Conserved promoter element located ~25–30 bp upstream of transcription start, positioning RNA Polymerase II." },
+      { term: "Spliceosome", def: "Ribonucleoprotein complex of snRNAs and proteins that excises non-coding introns and ligates coding exons." },
+      { term: "Wobble Hypothesis", def: "Mechanism whereby non-Watson-Crick base pairing at the 3' codon base allows one tRNA to recognize multiple synonymous codons." }
+    ];
+
+    /* ============================================================
+       STORAGE & PROGRESSION ENGINE
+       ============================================================ */
+    const STORAGE_KEY = 'BIOL_ALICE_OPENSTAX_ARCADE_V1';
+    let arcadeData = { quiz: {}, order: {} };
+
+    function loadStore() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) arcadeData = JSON.parse(saved);
+      } catch (e) {
+        console.warn("Storage restricted", e);
+      }
+      if (!arcadeData.quiz) arcadeData.quiz = {};
+      if (!arcadeData.order) arcadeData.order = {};
+
+      quizQuestions.forEach(q => { if (typeof arcadeData.quiz[q.id] !== 'number') arcadeData.quiz[q.id] = 0; });
+      orderChallenges.forEach(c => { if (typeof arcadeData.order[c.id] !== 'number') arcadeData.order[c.id] = 0; });
+      updateAllProgressBars();
+    }
+
+    function saveStore() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(arcadeData));
+      } catch (e) {}
+      updateAllProgressBars();
+    }
+
+    function resetQuizProgress() {
+      if (confirm("Reset all saved mastery progress across General Biology chapters?")) {
+        arcadeData = { quiz: {}, order: {} };
+        saveStore();
+        startQuizRound();
+        startOrderRound();
+      }
+    }
+
+    function updateAllProgressBars() {
+      // Quiz & Chapters
+      let qMaster = 0;
+      let chCounts = { 10: 0, 11: 0, 12: 0, 14: 0, 15: 0 };
+
+      quizQuestions.forEach(q => {
+        if ((arcadeData.quiz[q.id] || 0) >= 1) {
+          qMaster++;
+          if (chCounts[q.chapter] !== undefined) chCounts[q.chapter]++;
+        }
+      });
+
+      const qPct = Math.round((qMaster / quizQuestions.length) * 100);
+      document.getElementById('quizFill').style.width = `${qPct}%`;
+      document.getElementById('dashTotal').textContent = `${qPct}%`;
+      document.getElementById('quizMasteredText').textContent = `Mastered: ${qMaster} / ${quizQuestions.length}`;
+      document.getElementById('quizPctText').textContent = `${qPct}% Mastered`;
+
+      document.getElementById('dashCh10').textContent = `${chCounts[10]} / 20`;
+      document.getElementById('dashCh11').textContent = `${chCounts[11]} / 20`;
+      document.getElementById('dashCh12').textContent = `${chCounts[12]} / 20`;
+      document.getElementById('dashCh14').textContent = `${chCounts[14]} / 20`;
+      document.getElementById('dashCh15').textContent = `${chCounts[15]} / 20`;
+
+      // Ordering
+      let oMaster = 0;
+      orderChallenges.forEach(c => { if ((arcadeData.order[c.id] || 0) >= 1) oMaster++; });
+      const oPct = Math.round((oMaster / orderChallenges.length) * 100);
+      document.getElementById('orderFill').style.width = `${oPct}%`;
+      document.getElementById('orderMasteredText').textContent = `Mastered: ${oMaster} / ${orderChallenges.length}`;
+      document.getElementById('orderPctText').textContent = `${oPct}% Mastered`;
+    }
+
+    function switchMode(mode) {
+      ['quiz', 'order', 'match', 'cards'].forEach(m => {
+        document.getElementById(`panel-${m}`).classList.remove('active');
+        document.getElementById(`tab-${m}`).setAttribute('aria-selected', 'false');
+      });
+      document.getElementById(`panel-${mode}`).classList.add('active');
+      document.getElementById(`tab-${mode}`).setAttribute('aria-selected', 'true');
+    }
+
+    /* ============================================================
+       MODULE 1: 100 MCQ MASTERY QUIZ (10 QUESTIONS PER ROUND)
+       ============================================================ */
+    let qPool = [], qIdx = 0, qCorrect = 0, currentDisplayOptions = [];
+
+    function startQuizRound() {
+      const shuffle = arr => arr.slice().sort(() => Math.random() - 0.5);
+      const unmastered = quizQuestions.filter(q => (arcadeData.quiz[q.id] || 0) === 0);
+
+      if (unmastered.length >= 10) {
+        qPool = shuffle(unmastered).slice(0, 10);
+      } else if (unmastered.length > 0) {
+        const rem = quizQuestions.filter(q => (arcadeData.quiz[q.id] || 0) > 0);
+        qPool = shuffle(unmastered).concat(shuffle(rem).slice(0, 10 - unmastered.length));
+      } else {
+        qPool = shuffle(quizQuestions).slice(0, 10);
+      }
+
+      qIdx = 0; qCorrect = 0;
+      document.getElementById('quizActiveCard').style.display = 'block';
+      document.getElementById('quizCompleteCard').style.display = 'none';
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      const q = qPool[qIdx];
+      const isMastered = (arcadeData.quiz[q.id] || 0) >= 1;
+      document.getElementById('quizRoundTag').textContent = `Question ${qIdx + 1} of 10 • Ch ${q.chapter}`;
+      document.getElementById('quizBadge').textContent = `Status: ${isMastered ? 'Mastered ★' : 'Unmastered'}`;
+      document.getElementById('quizPrompt').textContent = q.q;
+
+      const opts = document.getElementById('quizOpts');
+      opts.innerHTML = '';
+      document.getElementById('quizFeedback').className = 'feedback-box';
+      document.getElementById('quizFeedback').textContent = '';
+      document.getElementById('quizNextBtn').style.display = 'none';
+
+      // Dynamic shuffle so correct answers distribute evenly across A, B, C, D
+      currentDisplayOptions = q.opts.slice().sort(() => Math.random() - 0.5);
+
+      currentDisplayOptions.forEach((text, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.textContent = `${String.fromCharCode(65 + i)}. ${text}`;
+        btn.onclick = () => handleQuizPick(text, btn);
+        opts.appendChild(btn);
+      });
+    }
+
+    function handleQuizPick(selectedText, clickedBtn) {
+      const q = qPool[qIdx];
+      const buttons = document.querySelectorAll('#quizOpts .opt-btn');
+      const fb = document.getElementById('quizFeedback');
+      buttons.forEach(b => b.disabled = true);
+
+      if (selectedText === q.ans) {
+        clickedBtn.classList.add('correct');
+        fb.className = 'feedback-box show pass';
+        fb.innerHTML = `<strong>✓ Correct!</strong> ${q.exp}`;
+        qCorrect++;
+        arcadeData.quiz[q.id] = 1;
+        shootConfetti();
+      } else {
+        clickedBtn.classList.add('incorrect');
+        buttons.forEach(b => {
+          if (b.textContent.slice(3) === q.ans) b.classList.add('correct');
+        });
+        fb.className = 'feedback-box show fail';
+        fb.innerHTML = `<strong>✗ Incorrect.</strong> ${q.exp}`;
+        arcadeData.quiz[q.id] = 0;
+      }
+
+      saveStore();
+      document.getElementById('quizNextBtn').style.display = 'inline-block';
+      document.getElementById('quizNextBtn').focus();
+    }
+
+    function nextQuizQuestion() {
+      qIdx++;
+      if (qIdx < 10) renderQuizQuestion();
+      else {
+        document.getElementById('quizActiveCard').style.display = 'none';
+        document.getElementById('quizCompleteCard').style.display = 'block';
+        document.getElementById('quizRoundScore').textContent = `${qCorrect} / 10`;
+        document.getElementById('quizRoundMsg').textContent = qCorrect >= 8 ? "Outstanding accuracy! Concepts are locking in." : "Review the feedback above and keep cycling through.";
+      }
+    }
+
+    /* ============================================================
+       MODULE 2: BIOLOGICAL PATHWAYS (ORDERING)
+       ============================================================ */
+    let oPool = [], oIdx = 0, oCorrect = 0, activeTimelineItems = [];
+
+    function startOrderRound() {
+      const shuffle = arr => arr.slice().sort(() => Math.random() - 0.5);
+      const unmastered = orderChallenges.filter(c => (arcadeData.order[c.id] || 0) === 0);
+
+      if (unmastered.length >= 5) {
+        oPool = shuffle(unmastered).slice(0, 5);
+      } else if (unmastered.length > 0) {
+        const rem = orderChallenges.filter(c => (arcadeData.order[c.id] || 0) > 0);
+        oPool = shuffle(unmastered).concat(shuffle(rem).slice(0, 5 - unmastered.length));
+      } else {
+        oPool = shuffle(orderChallenges).slice(0, 5);
+      }
+
+      oIdx = 0; oCorrect = 0;
+      document.getElementById('orderActiveCard').style.display = 'block';
+      document.getElementById('orderCompleteCard').style.display = 'none';
+      renderOrderChallenge();
+    }
+
+    function renderOrderChallenge() {
+      const ch = oPool[oIdx];
+      const isMastered = (arcadeData.order[ch.id] || 0) >= 1;
+      document.getElementById('orderRoundTag').textContent = `Challenge ${oIdx + 1} of 5`;
+      document.getElementById('orderBadge').textContent = `Status: ${isMastered ? 'Mastered ★' : 'Unmastered'}`;
+      document.getElementById('orderPrompt').textContent = `Arrange sequence chronologically from first to last — [${ch.title}]:`;
+
+      activeTimelineItems = ch.steps.map((s, i) => ({ ...s, orig: i })).sort(() => Math.random() - 0.5);
+      document.getElementById('orderFeedback').className = 'feedback-box';
+      document.getElementById('orderFeedback').textContent = '';
+      document.getElementById('orderSubmitBtn').style.display = 'inline-block';
+      document.getElementById('orderNextBtn').style.display = 'none';
+
+      drawOrderItems(false);
+    }
+
+    function drawOrderItems(isLocked) {
+      const ul = document.getElementById('orderTimeline');
+      ul.innerHTML = '';
+      activeTimelineItems.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'timeline-item';
+        li.id = `oitem-${idx}`;
+
+        const content = document.createElement('div');
+        content.className = 'item-content';
+        content.innerHTML = `<span class="pos-index">${idx + 1}.</span> <span class="event-label">${item.text}</span>`;
+        li.appendChild(content);
+
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'btn-shift-group';
+        btnGroup.innerHTML = `
+          <button class="btn-shift" onclick="shiftOrder(${idx}, -1)" ${isLocked || idx === 0 ? 'disabled' : ''}>▲</button>
+          <button class="btn-shift" onclick="shiftOrder(${idx}, 1)" ${isLocked || idx === activeTimelineItems.length - 1 ? 'disabled' : ''}>▼</button>
+        `;
+        li.appendChild(btnGroup);
+        ul.appendChild(li);
+      });
+    }
+
+    function shiftOrder(index, dir) {
+      const target = index + dir;
+      if (target < 0 || target >= activeTimelineItems.length) return;
+      const tmp = activeTimelineItems[index];
+      activeTimelineItems[index] = activeTimelineItems[target];
+      activeTimelineItems[target] = tmp;
+      drawOrderItems(false);
+    }
+
+    function checkOrderSequence() {
+      const ch = oPool[oIdx];
+      let perfect = true;
+
+      activeTimelineItems.forEach((item, i) => {
+        const el = document.getElementById(`oitem-${i}`);
+        if (item.orig === i) {
+          el.classList.add('correct');
+        } else {
+          el.classList.add('incorrect');
+          perfect = false;
+        }
+      });
+
+      drawOrderItems(true);
+      const fb = document.getElementById('orderFeedback');
+      document.getElementById('orderSubmitBtn').style.display = 'none';
+      document.getElementById('orderNextBtn').style.display = 'inline-block';
+
+      if (perfect) {
+        oCorrect++;
+        fb.className = 'feedback-box show pass';
+        fb.innerHTML = `<strong>✓ Perfect Sequence!</strong> ${ch.rationale}`;
+        arcadeData.order[ch.id] = 1;
+        shootConfetti();
+      } else {
+        fb.className = 'feedback-box show fail';
+        fb.innerHTML = `<strong>✗ Sequence Error.</strong> Check red-flagged steps above. ${ch.rationale}`;
+        arcadeData.order[ch.id] = 0;
+      }
+      saveStore();
+    }
+
+    function nextOrderChallenge() {
+      oIdx++;
+      if (oIdx < 5) renderOrderChallenge();
+      else {
+        document.getElementById('orderActiveCard').style.display = 'none';
+        document.getElementById('orderCompleteCard').style.display = 'block';
+        document.getElementById('orderRoundScore').textContent = `${oCorrect} / 5`;
+        document.getElementById('orderRoundMsg').textContent = oCorrect >= 4 ? "Impressive pathway comprehension!" : "Review the biological stages and try the set again.";
+      }
+    }
+
+    /* ============================================================
+       MODULE 3: MATCHING LAB
+       ============================================================ */
+    function buildMatching() {
+      const tbody = document.getElementById('matchingBody');
+      tbody.innerHTML = '';
+      const choices = [
+        "-- Select Match --", "Topoisomerase", "RNA Primase", "DNA Ligase", "Telomerase",
+        "Aminoacyl-tRNA Synthetases", "Peptidyl Transferase", "FtsZ Ring", "Synaptonemal Complex"
+      ];
+
+      matchingItems.forEach((item, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.desc}</td>
+          <td>
+            <select id="matchSel-${i}">
+              ${choices.map(c => `<option value="${c}">${c}</option>`).join('')}
+            </select>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function gradeMatching() {
+      let score = 0;
+      matchingItems.forEach((item, i) => {
+        const sel = document.getElementById(`matchSel-${i}`);
+        if (sel.value === item.correct) {
+          sel.style.borderColor = 'var(--success)';
+          score++;
+        } else {
+          sel.style.borderColor = 'var(--danger)';
+        }
+      });
+      document.getElementById('matchingScore').textContent = `Score: ${score} / ${matchingItems.length}`;
+      if (score === matchingItems.length) shootConfetti();
+    }
+
+    /* ============================================================
+       MODULE 4: FLASHCARDS
+       ============================================================ */
+    let cardIdx = 0;
+    function renderFlashcard() {
+      const c = flashcards[cardIdx];
+      document.getElementById('cardCounter').textContent = `Card ${cardIdx + 1} of ${flashcards.length}`;
+      document.getElementById('cardFront').textContent = c.term;
+      document.getElementById('cardBack').textContent = c.def;
+      document.getElementById('flashcardCore').classList.remove('flipped');
+    }
+
+    function toggleCard() {
+      document.getElementById('flashcardCore').classList.toggle('flipped');
+    }
+
+    function navCard(dir) {
+      cardIdx = (cardIdx + dir + flashcards.length) % flashcards.length;
+      renderFlashcard();
+    }
+
+    /* ============================================================
+       CANVAS CONFETTI ENGINE
+       ============================================================ */
+    const canvas = document.getElementById("confettiCanvas");
+    const ctx = canvas.getContext("2d");
+    let parts = [];
+    let timer = null;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function shootConfetti() {
+      const colors = ["#38bdf8", "#4ade80", "#facc15", "#fb923c", "#c084fc", "#22d3ee"];
+      for (let i = 0; i < 30; i++) {
+        parts.push({
+          x: window.innerWidth / 2 + (Math.random() * 200 - 100),
+          y: window.innerHeight * 0.35 + (Math.random() * 60 - 30),
+          vx: (Math.random() - 0.5) * 10,
+          vy: Math.random() * -8 - 3,
+          size: Math.random() * 8 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1
+        });
+      }
+      if (!timer) animateConfetti();
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35;
+        p.alpha -= 0.02;
+
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(p.alpha, 0);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (p.alpha <= 0 || p.y > canvas.height) parts.splice(i, 1);
+      }
+      if (parts.length > 0) timer = requestAnimationFrame(animateConfetti);
+      else timer = null;
+    }
+
+    /* ============================================================
+       INITIALIZATION
+       ============================================================ */
+    loadStore();
+    startQuizRound();
+    startOrderRound();
+    buildMatching();
+    renderFlashcard();
+  </script>
+</body>
+</html>
