@@ -107,8 +107,9 @@
       background: var(--card-inner); display: flex; align-items: center; justify-content: center; padding: 1.5rem;
     }
     .card-core.flipped { transform: rotateY(180deg); border-color: var(--accent); }
-    .side { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 1.5rem; font-size: 1.15rem; }
-    .side.back { transform: rotateY(180deg); color: var(--text); }
+    .side { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 1.5rem; font-size: 1.1rem; line-height: 1.45; }
+    .side.front { color: var(--text-muted); font-style: italic; }
+    .side.back { transform: rotateY(180deg); color: var(--accent); font-weight: 700; font-size: 1.35rem; font-style: normal; }
 
     /* Feedback & Modals */
     .feedback-box { margin-top: 1rem; padding: 0.85rem; border-radius: 8px; font-size: 0.9rem; line-height: 1.45; display: none; }
@@ -255,12 +256,12 @@
       <div class="card">
         <div class="card-top">
           <span class="round-tag" id="cardCounter">Card 1 of 10</span>
-          <span style="font-size:0.85rem; color:var(--text-muted);">Tap to Flip</span>
+          <span style="font-size:0.85rem; color:var(--text-muted);">Definition First • Tap to Reveal Term</span>
         </div>
         <div class="card-wrap" onclick="toggleCard()" tabindex="0">
           <div class="card-core" id="flashcardCore">
-            <div class="side front" id="cardFront">Front</div>
-            <div class="side back" id="cardBack">Back</div>
+            <div class="side front" id="cardFront">Definition</div>
+            <div class="side back" id="cardBack">Term</div>
           </div>
         </div>
         <div class="bottom-bar" style="margin-top:1.25rem;">
@@ -468,23 +469,23 @@
     ];
 
     /* ============================================================
-       FLASHCARD DATA
+       FLASHCARD DATA (Definition -> Term)
        ============================================================ */
     const flashcards = [
-      { term: "Kinetochore", def: "Multiprotein complex assembled on the centromere that anchors mitotic spindle microtubules to pull chromatids apart." },
-      { term: "p53 Tumor Suppressor", def: "Transcription factor that senses genomic damage and activates p21 (Cdk inhibition) or triggers apoptosis." },
-      { term: "Chiasma (pl. Chiasmata)", def: "X-shaped microscopic points of physical contact where non-sister chromatids cross over during meiotic prophase I." },
-      { term: "Test Cross", def: "Breeding an individual displaying a dominant phenotype with a homozygous recessive individual to deduce genotype." },
-      { term: "Epistasis", def: "A genetic interaction where an allele at one locus masks or overrides the phenotypic expression of a separate gene locus." },
-      { term: "Okazaki Fragments", def: "Short stretches of DNA synthesized discontinuously along the lagging template strand during replication." },
-      { term: "Nucleosome", def: "Eukaryotic chromatin packaging unit composed of ~147 bp of DNA wound around an octamer of basic histone proteins." },
-      { term: "TATA Box", def: "Conserved promoter element located ~25–30 bp upstream of transcription start, positioning RNA Polymerase II." },
-      { term: "Spliceosome", def: "Ribonucleoprotein complex of snRNAs and proteins that excises non-coding introns and ligates coding exons." },
-      { term: "Wobble Hypothesis", def: "Mechanism whereby non-Watson-Crick base pairing at the 3' codon base allows one tRNA to recognize multiple synonymous codons." }
+      { def: "Multiprotein complex assembled on the centromere that anchors mitotic spindle microtubules to pull chromatids apart.", term: "Kinetochore" },
+      { def: "Transcription factor that senses genomic damage and activates p21 (Cdk inhibition) or triggers apoptosis.", term: "p53 Tumor Suppressor" },
+      { def: "X-shaped microscopic points of physical contact where non-sister chromatids cross over during meiotic prophase I.", term: "Chiasma (pl. Chiasmata)" },
+      { def: "Breeding an individual displaying a dominant phenotype with a homozygous recessive individual to deduce genotype.", term: "Test Cross" },
+      { def: "A genetic interaction where an allele at one locus masks or overrides the phenotypic expression of a separate gene locus.", term: "Epistasis" },
+      { def: "Short stretches of DNA synthesized discontinuously along the lagging template strand during replication.", term: "Okazaki Fragments" },
+      { def: "Eukaryotic chromatin packaging unit composed of ~147 bp of DNA wound around an octamer of basic histone proteins.", term: "Nucleosome" },
+      { def: "Conserved promoter element located ~25–30 bp upstream of transcription start, positioning RNA Polymerase II.", term: "TATA Box" },
+      { def: "Ribonucleoprotein complex of snRNAs and proteins that excises non-coding introns and ligates coding exons.", term: "Spliceosome" },
+      { def: "Mechanism whereby non-Watson-Crick base pairing at the 3' codon base allows one tRNA to recognize multiple synonymous codons.", term: "Wobble Hypothesis" }
     ];
 
     /* ============================================================
-       FISHER-YATES TRUE SHUFFLE UTILITY
+       FISHER-YATES SHUFFLE UTILITY
        ============================================================ */
     function shuffleArray(array) {
       const arr = array.slice();
@@ -498,7 +499,7 @@
     /* ============================================================
        STORAGE & PROGRESSION ENGINE
        ============================================================ */
-    const STORAGE_KEY = 'BIOL_ALICE_OPENSTAX_SHUFFLED_V2';
+    const STORAGE_KEY = 'BIOL_ALICE_OPENSTAX_SHUFFLE_ALL_V3';
     let arcadeData = { quiz: {}, order: {} };
 
     function loadStore() {
@@ -660,7 +661,7 @@
     }
 
     /* ============================================================
-       MODULE 2: BIOLOGICAL PATHWAYS (ORDERING)
+       MODULE 2: BIOLOGICAL PATHWAYS (ORDERING LAB)
        ============================================================ */
     let oPool = [], oIdx = 0, oCorrect = 0, activeTimelineItems = [];
 
@@ -689,6 +690,7 @@
       document.getElementById('orderBadge').textContent = `Status: ${isMastered ? 'Mastered ★' : 'Unmastered'}`;
       document.getElementById('orderPrompt').textContent = `Arrange sequence chronologically from first to last — [${ch.title}]:`;
 
+      // True Fisher-Yates Randomizer for the steps
       activeTimelineItems = shuffleArray(ch.steps.map((s, i) => ({ ...s, orig: i })));
       document.getElementById('orderFeedback').className = 'feedback-box';
       document.getElementById('orderFeedback').textContent = '';
@@ -776,23 +778,30 @@
     }
 
     /* ============================================================
-       MODULE 3: MATCHING LAB
+       MODULE 3: MATCHING LAB (FULLY SHUFFLED OPTIONS & ROWS)
        ============================================================ */
     function buildMatching() {
       const tbody = document.getElementById('matchingBody');
       tbody.innerHTML = '';
-      const choices = [
-        "-- Select Match --", "Topoisomerase", "RNA Primase", "DNA Ligase", "Telomerase",
+      
+      const rawChoices = [
+        "Topoisomerase", "RNA Primase", "DNA Ligase", "Telomerase",
         "Aminoacyl-tRNA Synthetases", "Peptidyl Transferase", "FtsZ Ring", "Synaptonemal Complex"
       ];
+      
+      // Shuffle the dropdown options randomly
+      const shuffledDropdownOptions = ["-- Select Match --", ...shuffleArray(rawChoices)];
 
-      matchingItems.forEach((item, i) => {
+      // Shuffle the rows in the table
+      const shuffledRows = shuffleArray(matchingItems);
+
+      shuffledRows.forEach((item, i) => {
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${item.desc}</td>
           <td>
-            <select id="matchSel-${i}">
-              ${choices.map(c => `<option value="${c}">${c}</option>`).join('')}
+            <select id="matchSel-${i}" data-correct="${item.correct}">
+              ${shuffledDropdownOptions.map(c => `<option value="${c}">${c}</option>`).join('')}
             </select>
           </td>
         `;
@@ -802,28 +811,30 @@
 
     function gradeMatching() {
       let score = 0;
-      matchingItems.forEach((item, i) => {
-        const sel = document.getElementById(`matchSel-${i}`);
-        if (sel.value === item.correct) {
+      const selects = document.querySelectorAll('#matchingBody select');
+      selects.forEach(sel => {
+        const expected = sel.getAttribute('data-correct');
+        if (sel.value === expected) {
           sel.style.borderColor = 'var(--success)';
           score++;
         } else {
           sel.style.borderColor = 'var(--danger)';
         }
       });
-      document.getElementById('matchingScore').textContent = `Score: ${score} / ${matchingItems.length}`;
-      if (score === matchingItems.length) shootConfetti();
+      document.getElementById('matchingScore').textContent = `Score: ${score} / ${selects.length}`;
+      if (score === selects.length) shootConfetti();
     }
 
     /* ============================================================
-       MODULE 4: FLASHCARDS
+       MODULE 4: FLASHCARDS (DEFINITION FRONT -> TERM BACK)
        ============================================================ */
     let cardIdx = 0;
     function renderFlashcard() {
       const c = flashcards[cardIdx];
       document.getElementById('cardCounter').textContent = `Card ${cardIdx + 1} of ${flashcards.length}`;
-      document.getElementById('cardFront').textContent = c.term;
-      document.getElementById('cardBack').textContent = c.def;
+      // Front shows definition, Back shows term
+      document.getElementById('cardFront').textContent = c.def;
+      document.getElementById('cardBack').textContent = c.term;
       document.getElementById('flashcardCore').classList.remove('flipped');
     }
 
