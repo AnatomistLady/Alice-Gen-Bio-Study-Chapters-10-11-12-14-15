@@ -148,7 +148,6 @@
 
     <!-- 1. MULTIPLE CHOICE PANEL -->
     <section id="panel-quiz" class="panel active" role="tabpanel" aria-labelledby="tab-quiz">
-      <!-- Chapter Progression Dashboard -->
       <div class="dashboard">
         <div class="stat-grid">
           <div class="stat-card">
@@ -187,7 +186,7 @@
       <div id="quizActiveCard" class="card">
         <div class="card-top">
           <span class="round-tag" id="quizRoundTag">Question 1 of 10</span>
-          <span class="mastery-badge" id="quizBadge">Mastery: 0/2</span>
+          <span class="mastery-badge" id="quizBadge">Status: Unmastered</span>
         </div>
         <p class="question-prompt" id="quizPrompt"></p>
         <div class="options-grid" id="quizOpts"></div>
@@ -217,7 +216,7 @@
       <div id="orderActiveCard" class="card">
         <div class="card-top">
           <span class="round-tag" id="orderRoundTag">Challenge 1 of 5</span>
-          <span class="mastery-badge" id="orderBadge">Mastery: 0/2</span>
+          <span class="mastery-badge" id="orderBadge">Status: Unmastered</span>
         </div>
         <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:1rem;" id="orderPrompt"></p>
         <ul class="timeline-list" id="orderTimeline"></ul>
@@ -349,7 +348,7 @@
       { id: 62, chapter: 14, q: "According to Chargaff's rules, chemical analysis of double-stranded DNA reveals that:", opts: ["Purines equal ribonucleotides", "Adenine percentage equals thymine, and guanine percentage equals cytosine", "Adenine equals guanine", "Cytosine percentage matches uracil"], ans: "Adenine percentage equals thymine, and guanine percentage equals cytosine", exp: "Chargaff showed that in dsDNA, %A = %T and %G = %C due to specific complementary hydrogen bonding." },
       { id: 63, chapter: 14, q: "What type of chemical bond joins adjacent nucleotides along the backbones of a DNA strand?", opts: ["Peptide bonds", "Phosphodiester bonds", "Hydrogen bonds", "Glycosidic bonds"], ans: "Phosphodiester bonds", exp: "Phosphodiester linkages connect the 3'-OH group of one deoxyribose to the 5'-phosphate group of the adjacent nucleotide." },
       { id: 64, chapter: 14, q: "How many hydrogen bonds form between a guanine-cytosine (G-C) complementary base pair in DNA?", opts: ["One", "Two", "Three", "Four"], ans: "Three", exp: "G-C base pairs share three hydrogen bonds, making them thermally more stable than A-T base pairs (two hydrogen bonds)." },
-      { id: 65, chapter: 14, q: "Which experiment used 15N and 14N density-gradient centrifugation to prove that DNA replicates semi-conservatively?", opts: ["Hershey-Chase experiment", "Meselson-Stahl experiment", "Griffith transformation", "Fraenkel-Conrat experiment"], ans: "Meselson-Stahl experiment", exp: "Meselson and Stahl tracked heavy nitrogen ($^{15}\text{N}$) through replication cycles, confirming semi-conservative strand distribution." },
+      { id: 65, chapter: 14, q: "Which experiment used 15N and 14N density-gradient centrifugation to prove that DNA replicates semi-conservatively?", opts: ["Hershey-Chase experiment", "Meselson-Stahl experiment", "Griffith transformation", "Fraenkel-Conrat experiment"], ans: "Meselson-Stahl experiment", exp: "Meselson and Stahl tracked heavy nitrogen ($^{15}\\text{N}$) through replication cycles, confirming semi-conservative strand distribution." },
       { id: 66, chapter: 14, q: "Which enzyme unzips and unwinds double-stranded DNA at the replication fork by breaking hydrogen bonds?", opts: ["DNA topoisomerase", "DNA helicase", "DNA ligase", "Primase"], ans: "DNA helicase", exp: "DNA helicase uses ATP to break base-pair hydrogen bonds, unwinding the double helix ahead of the replication fork." },
       { id: 67, chapter: 14, q: "What is the function of topoisomerase (gyrase) during DNA replication?", opts: ["Synthesize RNA primers", "Relieve supercoiling and torsional strain ahead of the replication fork", "Ligate Okazaki fragments", "Proofread mismatched bases"], ans: "Relieve supercoiling and torsional strain ahead of the replication fork", exp: "Topoisomerase makes transient single- or double-strand cuts to relieve rotational tension induced by helicase unwinding." },
       { id: 68, chapter: 14, q: "Why can DNA polymerases only synthesize new strands in the 5'-to-3' direction?", opts: ["They can only add incoming dNTPs to a free 3'-OH group", "They are structurally blocked by the 5' carbon", "Primers only bind to 3' ends", "Pyrimidines cannot accept 5' phosphates"], ans: "They can only add incoming dNTPs to a free 3'-OH group", exp: "DNA polymerases require a free 3'-OH group to catalyze the nucleophilic attack on the alpha-phosphate of an incoming dNTP." },
@@ -390,7 +389,7 @@
     ];
 
     /* ============================================================
-       PATHWAYS / ORDERING LAB (5 BIOLOGICAL PROCESS CHALLENGES)
+       PATHWAYS / ORDERING LAB DATA
        ============================================================ */
     const orderChallenges = [
       {
@@ -485,9 +484,21 @@
     ];
 
     /* ============================================================
+       FISHER-YATES TRUE SHUFFLE UTILITY
+       ============================================================ */
+    function shuffleArray(array) {
+      const arr = array.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    /* ============================================================
        STORAGE & PROGRESSION ENGINE
        ============================================================ */
-    const STORAGE_KEY = 'BIOL_ALICE_OPENSTAX_ARCADE_V1';
+    const STORAGE_KEY = 'BIOL_ALICE_OPENSTAX_SHUFFLED_V2';
     let arcadeData = { quiz: {}, order: {} };
 
     function loadStore() {
@@ -522,7 +533,6 @@
     }
 
     function updateAllProgressBars() {
-      // Quiz & Chapters
       let qMaster = 0;
       let chCounts = { 10: 0, 11: 0, 12: 0, 14: 0, 15: 0 };
 
@@ -545,7 +555,6 @@
       document.getElementById('dashCh14').textContent = `${chCounts[14]} / 20`;
       document.getElementById('dashCh15').textContent = `${chCounts[15]} / 20`;
 
-      // Ordering
       let oMaster = 0;
       orderChallenges.forEach(c => { if ((arcadeData.order[c.id] || 0) >= 1) oMaster++; });
       const oPct = Math.round((oMaster / orderChallenges.length) * 100);
@@ -566,19 +575,18 @@
     /* ============================================================
        MODULE 1: 100 MCQ MASTERY QUIZ (10 QUESTIONS PER ROUND)
        ============================================================ */
-    let qPool = [], qIdx = 0, qCorrect = 0, currentDisplayOptions = [];
+    let qPool = [], qIdx = 0, qCorrect = 0;
 
     function startQuizRound() {
-      const shuffle = arr => arr.slice().sort(() => Math.random() - 0.5);
       const unmastered = quizQuestions.filter(q => (arcadeData.quiz[q.id] || 0) === 0);
 
       if (unmastered.length >= 10) {
-        qPool = shuffle(unmastered).slice(0, 10);
+        qPool = shuffleArray(unmastered).slice(0, 10);
       } else if (unmastered.length > 0) {
         const rem = quizQuestions.filter(q => (arcadeData.quiz[q.id] || 0) > 0);
-        qPool = shuffle(unmastered).concat(shuffle(rem).slice(0, 10 - unmastered.length));
+        qPool = shuffleArray(unmastered).concat(shuffleArray(rem).slice(0, 10 - unmastered.length));
       } else {
-        qPool = shuffle(quizQuestions).slice(0, 10);
+        qPool = shuffleArray(quizQuestions).slice(0, 10);
       }
 
       qIdx = 0; qCorrect = 0;
@@ -600,14 +608,14 @@
       document.getElementById('quizFeedback').textContent = '';
       document.getElementById('quizNextBtn').style.display = 'none';
 
-      // Dynamic shuffle so correct answers distribute evenly across A, B, C, D
-      currentDisplayOptions = q.opts.slice().sort(() => Math.random() - 0.5);
+      // True Fisher-Yates Randomizer for Choices A-D
+      const randomizedChoices = shuffleArray(q.opts);
 
-      currentDisplayOptions.forEach((text, i) => {
+      randomizedChoices.forEach((choiceText, i) => {
         const btn = document.createElement('button');
         btn.className = 'opt-btn';
-        btn.textContent = `${String.fromCharCode(65 + i)}. ${text}`;
-        btn.onclick = () => handleQuizPick(text, btn);
+        btn.textContent = `${String.fromCharCode(65 + i)}. ${choiceText}`;
+        btn.onclick = () => handleQuizPick(choiceText, btn);
         opts.appendChild(btn);
       });
     }
@@ -657,16 +665,15 @@
     let oPool = [], oIdx = 0, oCorrect = 0, activeTimelineItems = [];
 
     function startOrderRound() {
-      const shuffle = arr => arr.slice().sort(() => Math.random() - 0.5);
       const unmastered = orderChallenges.filter(c => (arcadeData.order[c.id] || 0) === 0);
 
       if (unmastered.length >= 5) {
-        oPool = shuffle(unmastered).slice(0, 5);
+        oPool = shuffleArray(unmastered).slice(0, 5);
       } else if (unmastered.length > 0) {
         const rem = orderChallenges.filter(c => (arcadeData.order[c.id] || 0) > 0);
-        oPool = shuffle(unmastered).concat(shuffle(rem).slice(0, 5 - unmastered.length));
+        oPool = shuffleArray(unmastered).concat(shuffleArray(rem).slice(0, 5 - unmastered.length));
       } else {
-        oPool = shuffle(orderChallenges).slice(0, 5);
+        oPool = shuffleArray(orderChallenges).slice(0, 5);
       }
 
       oIdx = 0; oCorrect = 0;
@@ -682,7 +689,7 @@
       document.getElementById('orderBadge').textContent = `Status: ${isMastered ? 'Mastered ★' : 'Unmastered'}`;
       document.getElementById('orderPrompt').textContent = `Arrange sequence chronologically from first to last — [${ch.title}]:`;
 
-      activeTimelineItems = ch.steps.map((s, i) => ({ ...s, orig: i })).sort(() => Math.random() - 0.5);
+      activeTimelineItems = shuffleArray(ch.steps.map((s, i) => ({ ...s, orig: i })));
       document.getElementById('orderFeedback').className = 'feedback-box';
       document.getElementById('orderFeedback').textContent = '';
       document.getElementById('orderSubmitBtn').style.display = 'inline-block';
